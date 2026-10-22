@@ -577,7 +577,7 @@ export const documentService = {
     const inventoryValue = balances.reduce((sum, b) => sum + b.totalCost, 0);
 
     // Low stock
-    const products = await db.products.where('isActive').equals(1).toArray();
+    const products = await db.products.filter(p => p.isActive).toArray();
     const lowStockCount = balances.filter(b => {
       const product = products.find(p => p.id === b.productId);
       return product && b.quantity <= product.minStock;

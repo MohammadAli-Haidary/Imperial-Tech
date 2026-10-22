@@ -4,10 +4,10 @@ import { authService } from './authService';
 export const partyService = {
   async getAll(type?: string): Promise<Party[]> {
     if (type) {
-      const all = await db.parties.where('isActive').equals(1).toArray();
+      const all = await db.parties.filter(p => p.isActive).toArray();
       return all.filter(p => p.type === type || p.type === 'both');
     }
-    return db.parties.where('isActive').equals(1).toArray();
+    return db.parties.filter(p => p.isActive).toArray();
   },
 
   async getById(id: number): Promise<Party | undefined> {
@@ -45,7 +45,7 @@ export const partyService = {
   },
 
   async search(query: string): Promise<Party[]> {
-    const all = await db.parties.where('isActive').equals(1).toArray();
+    const all = await db.parties.filter(p => p.isActive).toArray();
     const q = query.toLowerCase();
     return all.filter(p => 
       p.name.toLowerCase().includes(q) || 

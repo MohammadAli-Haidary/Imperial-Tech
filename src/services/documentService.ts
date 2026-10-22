@@ -82,7 +82,7 @@ export const documentService = {
     if (!defaultWarehouse) return { success: false, error: 'انبار مشخص نشده' };
 
     return db.transaction('rw', 
-      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials, db.payments, db.paymentAllocations],
+      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials, db.payments, db.paymentAllocations, db.products],
       async () => {
         // Calculate totals
         let subtotal = 0;
@@ -206,7 +206,7 @@ export const documentService = {
     // Credit limit check will be done inside transaction
 
     return db.transaction('rw',
-      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials, db.payments, db.paymentAllocations],
+      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials, db.payments, db.paymentAllocations, db.products],
       async () => {
         let subtotal = 0;
         const lineData: Array<Omit<DocumentLine, 'id'>> = [];
@@ -362,7 +362,7 @@ export const documentService = {
     const originalLines = await db.documentLines.where('documentId').equals(data.originalDocId).toArray();
 
     return db.transaction('rw',
-      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials],
+      [db.documents, db.documentLines, db.inventoryBalances, db.stockMovements, db.parties, db.productSerials, db.products],
       async () => {
         let totalRefund = 0;
         const returnLines: Array<Omit<DocumentLine, 'id'>> = [];

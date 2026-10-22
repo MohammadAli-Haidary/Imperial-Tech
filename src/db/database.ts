@@ -438,27 +438,55 @@ export const db = new ImperialDB();
 
 export async function resetDatabase() {
   try {
+    // Close the database first
+    await db.close();
+    // Delete the database
     await db.delete();
+    // Reopen with new schema
     await db.open();
     console.log('Database reset successfully');
   } catch (err) {
     console.error('Error resetting database:', err);
+    // If delete fails, try to force close and reopen
+    try {
+      db.close();
+      await indexedDB.deleteDatabase('ImperialTechnologyDB');
+      await db.open();
+    } catch (err2) {
+      console.error('Force reset also failed:', err2);
+    }
   }
 }
 
 // ============ Seed Data ============
 
 export async function seedDatabase() {
-  // Check if database schema is valid
+  // Check if database schema is valid by testing multiple tables
   try {
     const unitsCount = await db.units.count();
+    const productsCount = await db.products.count();
+    const partiesCount = await db.parties.count();
+    const documentsCount = await db.documents.count();
+    
     if (unitsCount > 0) return; // Already seeded
-  } catch (err) {
-    // If error, reset database
+  } catch (err: any) {
+    // If error (like NotFoundError), reset database
     console.warn('Database schema error, resetting...', err);
     await resetDatabase();
-    return; // Will be called again on next page load
+    // After reset, try seeding again
+    try {
+      await seedData();
+    } catch (seedErr) {
+      console.error('Seeding after reset failed:', seedErr);
+    }
+    return;
   }
+  
+  // If we get here, database is valid but empty
+  await seedData();
+}
+
+async function seedData() {
 
   // Seed data without transaction (simpler and less error-prone)
   try {

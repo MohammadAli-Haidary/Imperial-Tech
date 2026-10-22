@@ -40,9 +40,16 @@ export default function SalesPage() {
     ]);
     setProducts(prods);
     setCustomers(custs);
+    
+    // Select cash customer by default
     if (custs.length > 0) {
       const cashCustomer = custs.find(c => c.name === 'مشتری نقدی');
-      if (cashCustomer) setSelectedCustomer(cashCustomer.id!);
+      if (cashCustomer && cashCustomer.id) {
+        setSelectedCustomer(cashCustomer.id);
+      } else if (custs[0]?.id) {
+        // If no cash customer, select first customer
+        setSelectedCustomer(custs[0].id);
+      }
     }
   }
 
@@ -81,7 +88,7 @@ export default function SalesPage() {
     setSuccess('');
 
     if (lines.length === 0) { setError('حداقل یک قلم اضافه کنید'); return; }
-    if (!selectedCustomer) { setError('مشتری را انتخاب کنید'); return; }
+    if (!selectedCustomer || selectedCustomer === 0) { setError('مشتری را انتخاب کنید'); return; }
 
     setLoading(true);
     const warehouse = (await productService.getDefaultWarehouse());

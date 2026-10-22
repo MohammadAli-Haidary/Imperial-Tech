@@ -17,6 +17,12 @@ export const partyService = {
   async create(data: Omit<Party, 'id' | 'createdAt' | 'updatedAt' | 'currentBalance'>): Promise<{ success: boolean; id?: number; error?: string }> {
     if (!data.name?.trim()) return { success: false, error: 'نام طرف حساب الزامی است' };
 
+    // Check for duplicate name
+    const existing = await db.parties.where('name').equals(data.name.trim()).first();
+    if (existing) {
+      return { success: false, error: 'این طرف حساب قبلاً ثبت شده است' };
+    }
+
     const now = new Date().toISOString();
     const id = await db.parties.add({
       ...data,

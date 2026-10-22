@@ -76,7 +76,7 @@ export default function PurchasesPage() {
     setError('');
     setSuccess('');
     if (lines.length === 0) { setError('حداقل یک قلم اضافه کنید'); return; }
-    if (!selectedSupplier) { setError('تأمین‌کننده را انتخاب کنید'); return; }
+    if (!selectedSupplier || selectedSupplier === 0) { setError('تأمین‌کننده را انتخاب کنید'); return; }
 
     setLoading(true);
     const warehouse = (await productService.getDefaultWarehouse());

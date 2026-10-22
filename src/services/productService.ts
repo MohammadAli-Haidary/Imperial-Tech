@@ -85,6 +85,13 @@ export const productService = {
 
   async createCategory(name: string, parentId?: number): Promise<{ success: boolean; id?: number; error?: string }> {
     if (!name.trim()) return { success: false, error: 'نام دسته‌بندی الزامی است' };
+    
+    // Check for duplicate
+    const existing = await db.categories.where('name').equals(name.trim()).first();
+    if (existing) {
+      return { success: false, error: 'این دسته‌بندی قبلاً ثبت شده است' };
+    }
+    
     const id = await db.categories.add({
       name: name.trim(),
       parentId,
@@ -108,6 +115,13 @@ export const productService = {
 
   async createBrand(name: string): Promise<{ success: boolean; id?: number; error?: string }> {
     if (!name.trim()) return { success: false, error: 'نام برند الزامی است' };
+    
+    // Check for duplicate
+    const existing = await db.brands.where('name').equals(name.trim()).first();
+    if (existing) {
+      return { success: false, error: 'این برند قبلاً ثبت شده است' };
+    }
+    
     const id = await db.brands.add({
       name: name.trim(),
       createdAt: new Date().toISOString(),

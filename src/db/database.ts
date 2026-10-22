@@ -434,79 +434,99 @@ class ImperialDB extends Dexie {
 
 export const db = new ImperialDB();
 
+// ============ Database Management ============
+
+export async function resetDatabase() {
+  try {
+    await db.delete();
+    await db.open();
+    console.log('Database reset successfully');
+  } catch (err) {
+    console.error('Error resetting database:', err);
+  }
+}
+
 // ============ Seed Data ============
 
 export async function seedDatabase() {
-  const unitsCount = await db.units.count();
-  if (unitsCount > 0) return; // Already seeded
+  // Check if database schema is valid
+  try {
+    const unitsCount = await db.units.count();
+    if (unitsCount > 0) return; // Already seeded
+  } catch (err) {
+    // If error, reset database
+    console.warn('Database schema error, resetting...', err);
+    await resetDatabase();
+    return; // Will be called again on next page load
+  }
 
-  await db.transaction('rw', 
-    [db.units, db.warehouses, db.financialAccounts, db.chartOfAccounts, db.expenseCategories, db.priceLists],
-    async () => {
-      // Default units
-      await db.units.bulkAdd([
-        { name: 'عدد', symbol: 'عدد', precision: 0, createdAt: new Date().toISOString() },
-        { name: 'جفت', symbol: 'جفت', precision: 0, createdAt: new Date().toISOString() },
-        { name: 'بسته', symbol: 'بسته', precision: 0, createdAt: new Date().toISOString() },
-        { name: 'متر', symbol: 'متر', precision: 2, createdAt: new Date().toISOString() },
-        { name: 'کیلوگرم', symbol: 'کیلو', precision: 3, createdAt: new Date().toISOString() },
-      ]);
+  // Seed data without transaction (simpler and less error-prone)
+  try {
+    // Default units
+    await db.units.bulkAdd([
+      { name: 'عدد', symbol: 'عدد', precision: 0, createdAt: new Date().toISOString() },
+      { name: 'جفت', symbol: 'جفت', precision: 0, createdAt: new Date().toISOString() },
+      { name: 'بسته', symbol: 'بسته', precision: 0, createdAt: new Date().toISOString() },
+      { name: 'متر', symbol: 'متر', precision: 2, createdAt: new Date().toISOString() },
+      { name: 'کیلوگرم', symbol: 'کیلو', precision: 3, createdAt: new Date().toISOString() },
+    ]);
 
-      // Default warehouse
-      await db.warehouses.add({
-        name: 'انبار اصلی',
-        location: 'مغازه',
-        isDefault: true,
-        createdAt: new Date().toISOString(),
-      });
+    // Default warehouse
+    await db.warehouses.add({
+      name: 'انبار اصلی',
+      location: 'مغازه',
+      isDefault: true,
+      createdAt: new Date().toISOString(),
+    });
 
-      // Default financial accounts
-      await db.financialAccounts.bulkAdd([
-        { name: 'صندوق نقدی', type: 'cash', balance: 0, isActive: true, createdAt: new Date().toISOString() },
-        { name: 'حساب بانکی', type: 'bank', balance: 0, isActive: true, createdAt: new Date().toISOString() },
-      ]);
+    // Default financial accounts
+    await db.financialAccounts.bulkAdd([
+      { name: 'صندوق نقدی', type: 'cash', balance: 0, isActive: true, createdAt: new Date().toISOString() },
+      { name: 'حساب بانکی', type: 'bank', balance: 0, isActive: true, createdAt: new Date().toISOString() },
+    ]);
 
-      // Chart of accounts
-      await db.chartOfAccounts.bulkAdd([
-        { code: '1000', name: 'موجودی کالا', type: 'asset', balance: 0, isActive: true },
-        { code: '1100', name: 'حساب‌های دریافتنی', type: 'asset', balance: 0, isActive: true },
-        { code: '1200', name: 'صندوق', type: 'asset', balance: 0, isActive: true },
-        { code: '1300', name: 'حساب بانکی', type: 'asset', balance: 0, isActive: true },
-        { code: '2000', name: 'حساب‌های پرداختنی', type: 'liability', balance: 0, isActive: true },
-        { code: '3000', name: 'سرمایه', type: 'equity', balance: 0, isActive: true },
-        { code: '4000', name: 'درآمد فروش', type: 'revenue', balance: 0, isActive: true },
-        { code: '4100', name: 'برگشت فروش', type: 'revenue', balance: 0, isActive: true },
-        { code: '5000', name: 'بهای کالای فروخته‌شده', type: 'expense', balance: 0, isActive: true },
-        { code: '5100', name: 'خرید کالا', type: 'expense', balance: 0, isActive: true },
-        { code: '5200', name: 'برگشت خرید', type: 'expense', balance: 0, isActive: true },
-        { code: '6000', name: 'مصارف عمومی', type: 'expense', balance: 0, isActive: true },
-        { code: '6100', name: 'مصارف تعمیرات', type: 'expense', balance: 0, isActive: true },
-      ]);
+    // Chart of accounts
+    await db.chartOfAccounts.bulkAdd([
+      { code: '1000', name: 'موجودی کالا', type: 'asset', balance: 0, isActive: true },
+      { code: '1100', name: 'حساب‌های دریافتنی', type: 'asset', balance: 0, isActive: true },
+      { code: '1200', name: 'صندوق', type: 'asset', balance: 0, isActive: true },
+      { code: '1300', name: 'حساب بانکی', type: 'asset', balance: 0, isActive: true },
+      { code: '2000', name: 'حساب‌های پرداختنی', type: 'liability', balance: 0, isActive: true },
+      { code: '3000', name: 'سرمایه', type: 'equity', balance: 0, isActive: true },
+      { code: '4000', name: 'درآمد فروش', type: 'revenue', balance: 0, isActive: true },
+      { code: '4100', name: 'برگشت فروش', type: 'revenue', balance: 0, isActive: true },
+      { code: '5000', name: 'بهای کالای فروخته‌شده', type: 'expense', balance: 0, isActive: true },
+      { code: '5100', name: 'خرید کالا', type: 'expense', balance: 0, isActive: true },
+      { code: '5200', name: 'برگشت خرید', type: 'expense', balance: 0, isActive: true },
+      { code: '6000', name: 'مصارف عمومی', type: 'expense', balance: 0, isActive: true },
+      { code: '6100', name: 'مصارف تعمیرات', type: 'expense', balance: 0, isActive: true },
+    ]);
 
-      // Default expense categories
-      await db.expenseCategories.bulkAdd([
-        { name: 'کرایه', createdAt: new Date().toISOString() },
-        { name: 'برق', createdAt: new Date().toISOString() },
-        { name: 'اینترنت', createdAt: new Date().toISOString() },
-        { name: 'حقوق کارمندان', createdAt: new Date().toISOString() },
-        { name: 'سایر مصارف', createdAt: new Date().toISOString() },
-      ]);
+    // Default expense categories
+    await db.expenseCategories.bulkAdd([
+      { name: 'کرایه', createdAt: new Date().toISOString() },
+      { name: 'برق', createdAt: new Date().toISOString() },
+      { name: 'اینترنت', createdAt: new Date().toISOString() },
+      { name: 'حقوق کارمندان', createdAt: new Date().toISOString() },
+      { name: 'سایر مصارف', createdAt: new Date().toISOString() },
+    ]);
 
-      // Default price lists
-      await db.priceLists.bulkAdd([
-        { name: 'قیمت پرچون', type: 'retail', createdAt: new Date().toISOString() },
-        { name: 'قیمت عمده', type: 'wholesale', createdAt: new Date().toISOString() },
-      ]);
+    // Default price lists
+    await db.priceLists.bulkAdd([
+      { name: 'قیمت پرچون', type: 'retail', createdAt: new Date().toISOString() },
+      { name: 'قیمت عمده', type: 'wholesale', createdAt: new Date().toISOString() },
+    ]);
 
-      // Default customer (cash customer)
-      await db.parties.add({
-        name: 'مشتری نقدی',
-        type: 'customer',
-        currentBalance: 0,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  );
+    // Default customer (cash customer)
+    await db.parties.add({
+      name: 'مشتری نقدی',
+      type: 'customer',
+      currentBalance: 0,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Error seeding database:', err);
+  }
 }

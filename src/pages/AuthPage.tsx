@@ -39,22 +39,27 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    const result = await authService.registerAdmin({
-      fullName, username, email, password, confirmPassword
-    });
+    try {
+      const result = await authService.registerAdmin({
+        fullName, username, email, password, confirmPassword
+      });
 
-    if (result.success) {
-      await seedDatabase();
-      setSuccess('ثبت‌نام موفق! اکنون وارد شوید.');
-      setIsLogin(true);
-      setNeedsSetup(false);
-      setFullName('');
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-    } else {
-      setError(result.error || 'خطا در ثبت‌نام');
+      if (result.success) {
+        await seedDatabase();
+        setSuccess('ثبت‌نام موفق! اکنون وارد شوید.');
+        setIsLogin(true);
+        setNeedsSetup(false);
+        setFullName('');
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+      } else {
+        setError(result.error || 'خطا در ثبت‌نام');
+      }
+    } catch (err: any) {
+      console.error('Register error:', err);
+      setError('خطای غیرمنتظره: ' + (err.message || 'لطفاً دوباره تلاش کنید'));
     }
     setLoading(false);
   }
@@ -64,13 +69,18 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    const result = await authService.login(username, password);
+    try {
+      const result = await authService.login(username, password);
 
-    if (result.success && result.user) {
-      setUser(result.user);
-      setAuthenticated(true);
-    } else {
-      setError(result.error || 'خطا در ورود');
+      if (result.success && result.user) {
+        setUser(result.user);
+        setAuthenticated(true);
+      } else {
+        setError(result.error || 'خطا در ورود');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError('خطای غیرمنتظره: ' + (err.message || 'لطفاً دوباره تلاش کنید'));
     }
     setLoading(false);
   }

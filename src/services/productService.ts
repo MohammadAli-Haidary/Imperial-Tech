@@ -5,7 +5,7 @@ export const productService = {
   // ============ Products ============
   
   async getAll(): Promise<Product[]> {
-    return db.products.where('isActive').equals(1).toArray();
+    return db.products.filter(p => p.isActive).toArray();
   },
 
   async getById(id: number): Promise<Product | undefined> {
@@ -68,7 +68,7 @@ export const productService = {
   },
 
   async search(query: string): Promise<Product[]> {
-    const all = await db.products.where('isActive').equals(1).toArray();
+    const all = await db.products.filter(p => p.isActive).toArray();
     const q = query.toLowerCase();
     return all.filter(p => 
       p.name.toLowerCase().includes(q) || 
@@ -146,7 +146,7 @@ export const productService = {
   },
 
   async getDefaultWarehouse(): Promise<Warehouse | undefined> {
-    return db.warehouses.where('isDefault').equals(1).first();
+    return db.warehouses.filter(w => w.isDefault).first();
   },
 
   // ============ Serials ============
@@ -208,7 +208,7 @@ export const productService = {
       ? await db.inventoryBalances.where('warehouseId').equals(warehouseId).toArray()
       : await db.inventoryBalances.toArray();
     
-    const products = await db.products.where('isActive').equals(1).toArray();
+    const products = await db.products.filter(p => p.isActive).toArray();
     const lowStock: Array<Product & { currentQty: number }> = [];
 
     for (const balance of balances) {

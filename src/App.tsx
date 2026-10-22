@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAppStore } from './store/appStore';
 import { authService } from './services/authService';
-import { seedDatabase } from './db/database';
+import { seedDatabase, resetDatabase } from './db/database';
 import Layout from './components/Layout';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
@@ -27,8 +27,18 @@ function App() {
         if (!hasAdmin) {
           setNeedsSetup(true);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Init error:', err);
+        // If database error, try to reset
+        if (err.name === 'NotFoundError' || err.message?.includes('object store')) {
+          console.warn('Database schema mismatch, resetting...');
+          try {
+            await resetDatabase();
+            await seedDatabase();
+          } catch (resetErr) {
+            console.error('Reset failed:', resetErr);
+          }
+        }
       }
       setInitialized(true);
     }

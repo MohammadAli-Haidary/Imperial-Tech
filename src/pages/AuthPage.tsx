@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { seedDatabase } from '../db/database';
+import { seedDatabase, resetDatabase } from '../db/database';
 import { useAppStore } from '../store/appStore';
-import { Shield, User, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { Shield, User, Lock, Mail, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 export default function AuthPage() {
   const { needsSetup, setNeedsSetup, setUser, setAuthenticated } = useAppStore();
@@ -83,6 +83,21 @@ export default function AuthPage() {
       setError('خطای غیرمنتظره: ' + (err.message || 'لطفاً دوباره تلاش کنید'));
     }
     setLoading(false);
+  }
+
+  async function handleResetDatabase() {
+    if (confirm('آیا مطمئن هستید؟ تمام اطلاعات پاک خواهد شد!')) {
+      setLoading(true);
+      setError('');
+      try {
+        await resetDatabase();
+        await seedDatabase();
+        window.location.reload();
+      } catch (err: any) {
+        setError('خطا در reset دیتابیس: ' + (err.message || ''));
+        setLoading(false);
+      }
+    }
   }
 
   return (
@@ -228,6 +243,17 @@ export default function AuthPage() {
         <p className="text-center text-xs text-gray-400 mt-6">
           نسخه ۱.۰ — کاملاً آفلاین و امن
         </p>
+
+        {/* Reset Database Button */}
+        <div className="mt-4 text-center">
+          <button
+            onClick={handleResetDatabase}
+            className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1 mx-auto"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Reset دیتابیس (پاک کردن تمام اطلاعات)</span>
+          </button>
+        </div>
       </div>
     </div>
   );
